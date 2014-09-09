@@ -10,7 +10,7 @@ uniform mat4 projectionMatrix;
 
 void main(void)
 {
-	exNormal = inverse(transpose(mat3(modelviewMatrix))) * in_Normal; // Phong, "fake" normal transformation
+	exNormal = transpose(inverse(mat3(modelviewMatrix))) * in_Normal; // Phong, "fake" normal transformation
 
 	exSurface = vec3(modelviewMatrix * vec4(in_Position, 1.0)); // Don't include projection here - we only want to go to view coordinates
 
