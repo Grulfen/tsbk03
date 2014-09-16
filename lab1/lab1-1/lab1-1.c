@@ -172,15 +172,24 @@ void display(void)
 
 	/* glUniform1f(glGetUniformLocation(lowpasshader, "t"), t); */
 
-
 	glUseProgram(lowpasshader);
+
+	// Use CLAMP_TO_EDGE to prevent blooming to bleed over edges
+	glBindTexture(GL_TEXTURE_2D, fbo1->texid);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, fbo2->texid);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	// Restore bound texture
+	glBindTexture(GL_TEXTURE_2D, fbo_orig->texid);
 
 	for(int i=0; i<FILTER_PASSES;i++){
 	    useFBO(fbo1, fbo2, 0L);
 	    DrawModel(squareModel, lowpasshader, "in_Position", NULL, "in_TexCoord");
 
 	    useFBO(fbo2, fbo1, 0L);
-
 	    DrawModel(squareModel, lowpasshader, "in_Position", NULL, "in_TexCoord");
 	}
 
