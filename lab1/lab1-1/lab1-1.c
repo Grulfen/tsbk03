@@ -41,7 +41,7 @@
 
 #define NUM_LIGHTS 4
 
-#define FILTER_PASSES 10
+#define FILTER_PASSES 20
 
 void OnTimer(int value);
 
