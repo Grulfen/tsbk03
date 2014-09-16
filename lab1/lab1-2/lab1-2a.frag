@@ -21,8 +21,6 @@ void main(void)
     vec3 light = vec3(0.0, 0.7, 0.7); // Light source in view coordinates
     vec2 tmpTexCoord;
 
-    mat3 Mvt = transpose(mat3(Ps,Pt,out_Normal));
-
     // Calculate gradients here
     float offset = 1.0 / 256.0; // texture size, same in both directions
 
@@ -38,11 +36,12 @@ void main(void)
     dbt -= texture(texUnit, tmpTexCoord);
     dbt *= 2;
 
-    normal = vec3(dbs, dbt, 1);
+    normal = out_Normal + dbs*Ps + dbt*Pt;
     normal = normalize(normal);
+    /* normal = normalize(out_Normal); */
 
     // Simplified lighting calculation.
     // A full solution would include material, ambient, specular, light sources, multiply by texture.
-    out_Color = vec4( dot(normal, Mvt*light));
-    /* out_Color = vec4( dot(normal, Mvt*light)) * texture(texUnit2, outTexCoord); */
+    out_Color = vec4( dot(normal, light));
+    /* out_Color = vec4( dot(normal, light)) * texture(texUnit2, outTexCoord); */
 }
