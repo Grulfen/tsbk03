@@ -16,6 +16,7 @@ uniform mat4 modelviewMatrix;
 void main(void)
 {
 	vec3 light = normalize(mat3(modelviewMatrix)*vec3(0.58, 0.58, 0.58)); // Given in VIEW coordinates! You usually specify light sources in world coordinates.
+	vec3 light_color = vec3(1,1,1);
 	float diffuse, specular, shade;
 	
 	// Diffuse
@@ -29,6 +30,6 @@ void main(void)
 	if (specular > 0.0)
 		specular = 1.0 * pow(specular, 150.0);
 	specular = max(specular, 0.0);
-	shade = 1.0*diffuse + 7.0*specular;
-	outColor = vec4(shade, shade, shade, 1.0);
+	shade = 0.5*diffuse + 7.0*specular;
+	outColor = vec4(shade*light_color, 1.0);
 }

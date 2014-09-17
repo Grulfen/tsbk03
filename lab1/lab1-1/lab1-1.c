@@ -42,6 +42,8 @@
 #define NUM_LIGHTS 4
 
 #define FILTER_PASSES 20
+#define FILTER_DIAG_PASSES 3
+#define DIAGONAL_PASSES 10
 
 void OnTimer(int value);
 
@@ -66,8 +68,9 @@ Model* squareModel;
 //----------------------Globals-------------------------------------------------
 Point3D cam, point;
 Model *model1;
-FBOstruct *fbo1, *fbo2, *fbo_orig;
-GLuint phongshader = 0, plaintextureshader = 0, lowpasshader = 0, thresholdshader = 0, bloomshader = 0;
+FBOstruct *fbo1, *fbo2, *fbo3, *fbo4, *fbo_orig;
+GLuint phongshader = 0, plaintextureshader = 0, lowpasshader = 0,
+       thresholdshader = 0, bloomshader = 0, diagonalshader1 = 0, diagonalshader2 = 0, averageshader = 0;
 GLfloat t = 0;
 
 //-------------------------------------------------------------------------------------
@@ -89,11 +92,16 @@ void init(void)
 	lowpasshader = loadShaders("lowpass.vert", "lowpass.frag");  // filters the values in texture and outputs
 	thresholdshader = loadShaders("threshold.vert", "threshold.frag");
 	bloomshader = loadShaders("bloom.vert", "bloom.frag");
+	diagonalshader1 = loadShaders("diagonal.vert", "diagonal1.frag");
+	diagonalshader2 = loadShaders("diagonal.vert", "diagonal2.frag");
+	averageshader = loadShaders("add.vert", "add.frag");
 
 	printError("init shader");
 
 	fbo1 = initFBO(W, H, 0);
 	fbo2 = initFBO(W, H, 0);
+	fbo3 = initFBO(W, H, 0);
+	fbo4 = initFBO(W, H, 0);
 	fbo_orig = initFBO(W, H, 0);
 
 	// load the model
@@ -168,9 +176,31 @@ void display(void)
 	useFBO(fbo2, fbo_orig, 0L);
 	DrawModel(squareModel, thresholdshader, "in_Position", NULL, "in_TexCoord");
 
-	// FILTERING
+	// Diagonalizing 1
+	
+	glUseProgram(diagonalshader1);
+	useFBO(fbo3, fbo2, 0L);
+	DrawModel(squareModel, diagonalshader1, "in_Position", NULL, "in_TexCoord");
+	for(int i=0; i<DIAGONAL_PASSES;i++){
+	  useFBO(fbo1, fbo3, 0L);
+	  DrawModel(squareModel, diagonalshader1, "in_Position", NULL, "in_TexCoord");
+	  useFBO(fbo3, fbo1, 0L);
+	  DrawModel(squareModel, diagonalshader1, "in_Position", NULL, "in_TexCoord");
+	}
 
-	/* glUniform1f(glGetUniformLocation(lowpasshader, "t"), t); */
+	// Diagonalizing 2
+	
+	glUseProgram(diagonalshader2);
+	useFBO(fbo4, fbo2, 0L);
+	DrawModel(squareModel, diagonalshader2, "in_Position", NULL, "in_TexCoord");
+	for(int i=0; i<DIAGONAL_PASSES;i++){
+	  useFBO(fbo1, fbo4, 0L);
+	  DrawModel(squareModel, diagonalshader2, "in_Position", NULL, "in_TexCoord");
+	  useFBO(fbo4, fbo1, 0L);
+	  DrawModel(squareModel, diagonalshader2, "in_Position", NULL, "in_TexCoord");
+	}
+
+	// FILTERING
 
 	glUseProgram(lowpasshader);
 
@@ -193,17 +223,39 @@ void display(void)
 	    DrawModel(squareModel, lowpasshader, "in_Position", NULL, "in_TexCoord");
 	}
 
-	// BLOOMING
+	// ADD DIAGONALS
+	
+	glUseProgram(averageshader);
+	glUniform1i(glGetUniformLocation(bloomshader, "texUnit2"), 1);
+
+	useFBO(fbo1, fbo3, fbo4);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	DrawModel(squareModel, averageshader, "in_Position", NULL, "in_TexCoord");
+
+	// FILTER DIAGONALS
+	//
+	for(int i=0; i<FILTER_DIAG_PASSES;i++){
+	    useFBO(fbo3, fbo1, 0L);
+	    DrawModel(squareModel, lowpasshader, "in_Position", NULL, "in_TexCoord");
+
+	    useFBO(fbo1, fbo3, 0L);
+	    DrawModel(squareModel, lowpasshader, "in_Position", NULL, "in_TexCoord");
+	}
+
+	// ADDING
 	
 	glUseProgram(bloomshader);
 	glUniform1i(glGetUniformLocation(bloomshader, "texUnit2"), 1);
 
-	useFBO(fbo1, fbo2, fbo_orig);
+	useFBO(fbo4, fbo2, fbo_orig);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	DrawModel(squareModel, bloomshader, "in_Position", NULL, "in_TexCoord");
+	useFBO(fbo3, fbo1, fbo4);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	DrawModel(squareModel, bloomshader, "in_Position", NULL, "in_TexCoord");
 	
 	// Activate second shader program
-	useFBO(0L, fbo1, 0L);
+	useFBO(0L, fbo3, 0L);
 	glUseProgram(plaintextureshader);
 
 	DrawModel(squareModel, plaintextureshader, "in_Position", NULL, "in_TexCoord");
