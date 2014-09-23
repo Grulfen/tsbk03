@@ -9,6 +9,9 @@
 
 // gcc skinning2.c ../common/*.c -lGL -o skinning2 -I../common
 
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 #ifdef __APPLE__
 // Mac
 	#include <OpenGL/gl3.h>
@@ -415,6 +418,5 @@ int main(int argc, char **argv)
   g_shader = loadShaders("shader.vert" , "shader.frag");
 
   glutMainLoop();
-
- return 0;
+  exit(0);
 }

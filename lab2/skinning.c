@@ -7,6 +7,9 @@
 
 // gcc skinning.c ../common/*.c -lGL -o skinning -I../common
 
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
 #ifdef __APPLE__
 // Mac
 	#include <OpenGL/gl3.h>
@@ -188,8 +191,8 @@ void DeformCylinder()
 	// Point3D v1, v2;
 	int row, corner;
 
-	Point3D g_vertsTmp_1[kMaxRow][kMaxCorners];
-	Point3D g_vertsTmp_2[kMaxRow][kMaxCorners];
+	/* Point3D g_vertsTmp_1[kMaxRow][kMaxCorners]; */
+	/* Point3D g_vertsTmp_2[kMaxRow][kMaxCorners]; */
 
 	
 	// för samtliga vertexar 
@@ -209,22 +212,22 @@ void DeformCylinder()
 			//
 			// row traverserar i cylinderns längdriktning,
 			// corner traverserar "runt" cylindern
-			g_vertsTmp_1[row][corner] =
-			    MultVec3(Mult(T(g_bones[1].pos.x,
-					    g_bones[1].pos.y,
-					    g_bones[1].pos.z),
-					Mult(g_bones[1].rot,T(-g_bones[1].pos.x,
-					    -g_bones[1].pos.y,
-					    -g_bones[1].pos.z))),
-				    g_vertsOrg[row][corner]);
-			g_vertsTmp_2[row][corner] =
-			    MultVec3(Mult(T(g_bones[0].pos.x,
-					    g_bones[0].pos.y,
-					    g_bones[0].pos.z),
-					Mult(g_bones[0].rot,T(-g_bones[0].pos.x,
-					    -g_bones[0].pos.y,
-					    -g_bones[0].pos.z))),
-				    g_vertsOrg[row][corner]);
+			/* g_vertsTmp_1[row][corner] = */
+			/*     MultVec3(Mult(T(g_bones[1].pos.x, */
+			/* 		    g_bones[1].pos.y, */
+			/* 		    g_bones[1].pos.z), */
+			/* 		Mult(g_bones[1].rot,T(-g_bones[1].pos.x, */
+			/* 		    -g_bones[1].pos.y, */
+			/* 		    -g_bones[1].pos.z))), */
+			/* 	    g_vertsOrg[row][corner]); */
+			/* g_vertsTmp_2[row][corner] = */
+			/*     MultVec3(Mult(T(g_bones[0].pos.x, */
+			/* 		    g_bones[0].pos.y, */
+			/* 		    g_bones[0].pos.z), */
+			/* 		Mult(g_bones[0].rot,T(-g_bones[0].pos.x, */
+			/* 		    -g_bones[0].pos.y, */
+			/* 		    -g_bones[0].pos.z))), */
+			/* 	    g_vertsOrg[row][corner]); */
 			/* if(weight[row]){ */
 			/*     g_vertsRes[row][corner] = g_vertsTmp_1[row][corner]; */
 			/* } else { */
@@ -241,17 +244,12 @@ void DeformCylinder()
 			// g_boneWeights innehåller blendvikter för benen.
 			// g_vertsOrg innehåller ursprunglig vertexdata.
 			// g_vertsRes innehåller den vertexdata som skickas till OpenGL.
-			/* g_vertsRes[row][corner] = */
-			/*     MultVec3(Mult(T(g_bones[0].pos.x, */
-			/* 		    g_bones[0].pos.y, */
-			/* 		    g_bones[0].pos.z), */
-			/* 		Mult(g_bones[0].rot,T(-g_bones[0].pos.x, */
-			/* 			-g_bones[0].pos.y, */
-			/* 			-g_bones[0].pos.z))), */
-			/* 	    g_vertsOrg[row][corner]); */
 
-			g_vertsRes[row][corner] = VectorAdd(ScalarMult(g_vertsTmp_1[row][corner], weight[row]), ScalarMult(g_vertsTmp_2[row][corner],(1-weight[row])));
-			
+			/* g_vertsRes[row][corner] = */
+			/*     VectorAdd( */
+			/* 	    ScalarMult(g_vertsTmp_1[row][corner], */
+			/* 		weight[row]), */
+			/* 	    ScalarMult(g_vertsTmp_2[row][corner],(1-weight[row]))); */
 		}
 	}
 }
@@ -281,6 +279,8 @@ void setBoneRotation(void)
 {
 	// Uppgift 3 TODO: Här behöver du skicka över benens rotation
 	// till vertexshadern
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "g_bones_0_rot"), 1, GL_TRUE, g_bones[0].rot.m);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "g_bones_1_rot"), 1, GL_TRUE, g_bones[1].rot.m);
 }
 
 
@@ -291,6 +291,10 @@ void setBoneLocation(void)
 {
 	// Uppgift 3 TODO: Här behöver du skicka över benens position
 	// till vertexshadern
+	mat4 tmp_matrix = T(g_bones[0].pos.x, g_bones[0].pos.y, g_bones[0].pos.z);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "g_bones_0_trans"), 1, GL_TRUE, tmp_matrix.m);
+	tmp_matrix = T(g_bones[1].pos.x, g_bones[1].pos.y, g_bones[1].pos.z);
+	glUniformMatrix4fv(glGetUniformLocation(g_shader, "g_bones_1_trans"), 1, GL_TRUE, tmp_matrix.m);
 }
 
 
