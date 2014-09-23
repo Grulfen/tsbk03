@@ -1,7 +1,7 @@
 # set this variable to the director in which you saved the common files
 commondir = ../common/
 
-FLAGS = -Wall -Wextra -Wno-unused-parameter -lGL -lglut -DGL_GLEXT_PROTOTYPES
+FLAGS = -Wall -Wextra -Wno-unused-parameter -lGL -lglut -DGL_GLEXT_PROTOTYPES -std=c99
 
 all : lab2-1 lab2-2
 
