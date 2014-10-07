@@ -494,7 +494,7 @@ mat4 ArbRotate(vec3 axis, GLfloat fi)
 	mat4 R, Rt, Raxel, m;
 
 // Check if parallel to Z
-	if (axis.x < 0.0000001) // Below som small value
+	if (axis.x < 0.0000001) // Below some small value
 	if (axis.x > -0.0000001)
 	if (axis.y < 0.0000001)
 	if (axis.y > -0.0000001)
@@ -563,7 +563,7 @@ mat4 CrossMatrix(vec3 a) // Skapar matris fšr kryssprodukt
 	else
 	{
 		m.m[0] =    0; m.m[1] =-a.z; m.m[2] = a.y; m.m[3] = 0.0;
-		m.m[4] = a.z; m.m[5] =    0; m.m[7] =-a.x; m.m[7] = 0.0;
+		m.m[4] = a.z; m.m[5] =    0; m.m[6] =-a.x; m.m[7] = 0.0;
 		m.m[8] =-a.y; m.m[9] = a.x; m.m[10]=    0; m.m[11] = 0.0;
 		m.m[12] =  0.0; m.m[13] =  0.0; m.m[14]=  0.0; m.m[15] = 0.0;
 		// OBS! 0.0 i homogena koordinaten. DŠrmed kan matrisen
@@ -801,9 +801,9 @@ mat4 mat3tomat4(mat3 m)
 	result.m[5] = m.m[5];
 	result.m[6] = m.m[6];
 	result.m[7] = 0;
-	result.m[8] = m.m[8];
-	result.m[9] = m.m[9];
-	result.m[10] = m.m[10];
+	result.m[8] = m.m[7];
+	result.m[9] = m.m[8];
+	result.m[10] = m.m[9];
 	result.m[11] = 0;
 
 	result.m[12] = 0;
